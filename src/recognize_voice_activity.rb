@@ -43,22 +43,16 @@ class SpeechListener
   end
 
   def onBeginningOfSpeech
-    Log.v 'debug', 'onBeginningOfSpeech'
   end
 
   def onBufferReceived(_buffer)
-    Log.v 'debug', 'onBufferReceived'
   end
 
   def onEndOfSpeech
-    Log.v 'debug', 'onEndOfSpeech'
   end
 
   def onError(error)
     context = @activity.getApplicationContext
-    Log.v 'debug', "context is #{context}"
-    Log.v 'debug', 'error occured'
-    Log.v 'debug', "error code is #{error}"
     # REVIEW スタイルガイドに忠実に従えば、if文で改行すべきだが、これくらいなら改行しない方が読みやすいのでは？
     @activity.start_ruboto_activity 'RecognizeVoiceActivity' if error == 6 || error == 7
   end

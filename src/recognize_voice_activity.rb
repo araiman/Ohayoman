@@ -9,17 +9,14 @@ java_import 'android.content.Intent'
 java_import 'android.media.MediaPlayer'
 java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
-java_import 'android.util.Log'
 
 class RecognizeVoiceActivity
   def on_create(bundle)
     super
     set_title 'Recognize Speeches'
 
-    Log.v 'debug', 'RecognizeVoiceActivity created'
     context = getApplicationContext
     start_recognize_voice(context)
-    Log.v 'debug', 'Recognizing voice started'
   end
 
   def start_recognize_voice(context)
@@ -67,60 +64,38 @@ class SpeechListener
   end
 
   def onEvent(_event_type, _params)
-    Log.v 'debug', 'onEvent'
   end
 
   def onPartialResults(_partial_results)
-    Log.v 'debug', 'onPartialResults'
   end
 
   def onReadyForSpeech(_params)
-    Log.v 'debug', 'onReadyForSpeech'
   end
 
   # HACK 複雑すぎるのでもっと読みやすくする。コードを1個にまとめよう。
   def onResults(results)
     result = results.get_string_array_list(SpeechRecognizer::RESULTS_RECOGNITION)
 
+    # TODO 挨拶のバリエーションを増やした時に、各挨拶の最後の数字がランダムで変わるように変更
     if result[0] == 'おはよう' \
       || result[0] == 'おはよー' \
       || result[0] == 'おはよ' \
       || result[0] == 'おはようございます' \
       || result[0] == 'はようございます' \
       || result[0] == 'おはよう ございます'
-      @player = MediaPlayer.create(@context, R.raw.ohayo1)
-      audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-      audio_manager.requestAudioFocus(@listener, AudioManager::STREAM_MUSIC, AudioManager::AUDIOFOCUS_GAIN)
-      @player.start
 
-      loop do
-        Log.v 'debug', 'loop'
-        unless @player.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    end
+      play_greeting(:ohayo)
+      launch_recognize_voice_after_playback
 
-    if result[0] == 'こんにちは' \
+    elsif result[0] == 'こんにちは' \
       || result[0] == 'こんにちわ' \
       || result[0] == 'こんちは' \
       || result[0] == 'こんちわ'
-      @player = MediaPlayer.create(self, R.raw.ohayo1)
-      context = getApplicationContext
-      audio_manager = context.getSystemService(Context::AUDIO_SERVICE)
-      audio_manager.requestAudioFocus(@listener, AudioManager::STREAM_MUSIC, AudioManager::AUDIOFOCUS_GAIN)
-      @player.start
 
-      loop do
-        unless @player.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    end
+      # TODO こんにちはの音声準備と、play_greetingメソッドを動くように
+      launch_recognize_voice_after_playback
 
-    if result[0] == 'お疲れ様です' \
+    elsif result[0] == 'お疲れ様です' \
       || result[0] == 'お疲れさまです' \
       || result[0] == 'おつかれさまです' \
       || result[0] == 'お疲れ' \
@@ -129,22 +104,32 @@ class SpeechListener
       || result[0] == '咲いています' \
       || result[0] == 'します' \
       || result[0] == '先にします'
-      @player = MediaPlayer.create(@context, R.raw.otsukare1)
-      audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-      audio_manager.requestAudioFocus(@listener, AudioManager::STREAM_MUSIC, AudioManager::AUDIOFOCUS_GAIN)
-      @player.start
 
-      loop do
-        unless @player.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
+      play_greeting(:otsukare)
+      launch_recognize_voice_after_playback
     end
   end
 
   def onRmsChanged(_rmsdB)
-    Log.v 'debug', 'onRmsChanged'
+  end
+
+  private
+
+  def launch_recognize_voice_after_playback
+    loop do
+      unless @player.isPlaying
+        @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+        break
+      end
+    end
+  end
+
+  def play_greeting(greeting)
+    greetings = { ohayo: R.raw.ohayo1, otsukare: R.raw.otsukare1 }
+    @player = MediaPlayer.create(@context, greetings[greeting])
+    audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
+    audio_manager.requestAudioFocus(@listener, AudioManager::STREAM_MUSIC, AudioManager::AUDIOFOCUS_GAIN)
+    @player.start
   end
 end
 

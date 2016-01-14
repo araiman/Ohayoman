@@ -9,6 +9,7 @@ java_import 'android.content.Intent'
 java_import 'android.media.MediaPlayer'
 java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
+java_import 'android.util.Log'
 
 class RecognizeVoiceActivity
   def on_create(bundle)
@@ -28,6 +29,9 @@ class RecognizeVoiceActivity
     intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
                     RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
     intent.putExtra(RecognizerIntent::EXTRA_PROMPT, 'Please Speech')
+
+    # TODO 音声をミュートに変更する処理の追加
+
     @speech_recognizer.start_listening(intent)
   end
 end
@@ -66,8 +70,10 @@ class SpeechListener
   def onReadyForSpeech(_params)
   end
 
-  # HACK 複雑すぎるのでもっと読みやすくする。コードを1個にまとめよう。
   def onResults(results)
+    # TODO 音声を最大にする処理の追加
+
+
     result = results.get_string_array_list(SpeechRecognizer::RESULTS_RECOGNITION)
 
     # TODO 挨拶のバリエーションを増やした時に、各挨拶の最後の数字がランダムで変わるように変更
@@ -78,6 +84,8 @@ class SpeechListener
       || result[0] == 'はようございます' \
       || result[0] == 'おはよう ございます'
 
+      # ohayo_num = rand(8)
+      # play_greeting([:ohayo][ohayo_num])
       play_greeting(:ohayo)
       launch_recognize_voice_after_playback
 
@@ -99,7 +107,9 @@ class SpeechListener
       || result[0] == 'します' \
       || result[0] == '先にします'
 
-      play_greeting(:otsukare)
+      otsukare_num = rand(12)
+      play_greeting([:otsukare][otsukare_num])
+      play_greeting([:ohayo][ohayo_num])
       launch_recognize_voice_after_playback
     end
   end
@@ -119,10 +129,16 @@ class SpeechListener
   end
 
   def play_greeting(greeting)
-    greetings = { ohayo: R.raw.ohayo1, otsukare: R.raw.otsukare1 }
-    @player = MediaPlayer.create(@context, greetings[greeting])
-    audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-    audio_manager.requestAudioFocus(@listener, AudioManager::STREAM_MUSIC, AudioManager::AUDIOFOCUS_GAIN)
+    # ohayo_resid = [R.raw.ohayo1, R.raw.ohayo2]
+    # otsukare_resid = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
+
+    # greetings = { ohayo: ohayo_resid, otsukare: otsukare_resid }
+    # Log.v 'debug', "#{greetings}"
+    # Log.v 'debug', "#{greetings[greeting]}"
+    # @player = MediaPlayer.create(@context, greetings[greeting])
+
+    # TODO もし，MediaPlayerを使い回せなかったら，有効に戻す
+    @player = MediaPlayer.create(@context, R.raw.ohayo1)
     @player.start
   end
 end

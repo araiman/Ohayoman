@@ -16,8 +16,8 @@ class RecognizeVoiceActivity
     super
     set_title 'Recognize Speeches'
 
-    context = getApplicationContext
-    start_recognize_voice(context)
+    @context = getApplicationContext
+    start_recognize_voice(@context)
   end
 
   def start_recognize_voice(context)
@@ -30,7 +30,11 @@ class RecognizeVoiceActivity
                     RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
     intent.putExtra(RecognizerIntent::EXTRA_PROMPT, 'Please Speech')
 
-    # TODO 音声をミュートに変更する処理の追加
+    # beep音を，ミュートしたり，解除したりする処理では，同じAudioManagerを使わなきゃいけないらしい
+    # リスナーでも同じManagerを使えるよう，Global変数にしている．
+    $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
+    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
+    $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
 
     @speech_recognizer.start_listening(intent)
   end
@@ -56,7 +60,6 @@ class SpeechListener
   end
 
   def onError(error)
-    context = @activity.getApplicationContext
     # REVIEW スタイルガイドに忠実に従えば、if文で改行すべきだが、これくらいなら改行しない方が読みやすいのでは？
     @activity.start_ruboto_activity 'RecognizeVoiceActivity' if error == 6 || error == 7
   end
@@ -71,9 +74,6 @@ class SpeechListener
   end
 
   def onResults(results)
-    # TODO 音声を最大にする処理の追加
-
-
     result = results.get_string_array_list(SpeechRecognizer::RESULTS_RECOGNITION)
 
     # TODO 挨拶のバリエーションを増やした時に、各挨拶の最後の数字がランダムで変わるように変更
@@ -86,6 +86,8 @@ class SpeechListener
 
       # ohayo_num = rand(8)
       # play_greeting([:ohayo][ohayo_num])
+      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
+      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       play_greeting(:ohayo)
       launch_recognize_voice_after_playback
 
@@ -93,7 +95,6 @@ class SpeechListener
       || result[0] == 'こんにちわ' \
       || result[0] == 'こんちは' \
       || result[0] == 'こんちわ'
-
       # TODO こんにちはの音声準備と、play_greetingメソッドを動くように
       launch_recognize_voice_after_playback
 
@@ -108,8 +109,8 @@ class SpeechListener
       || result[0] == '先にします'
 
       otsukare_num = rand(12)
-      play_greeting([:otsukare][otsukare_num])
-      play_greeting([:ohayo][ohayo_num])
+      # play_greeting([:otsukare][otsukare_num])
+      # play_greeting([:ohayo][ohayo_num])
       launch_recognize_voice_after_playback
     end
   end
@@ -137,7 +138,6 @@ class SpeechListener
     # Log.v 'debug', "#{greetings[greeting]}"
     # @player = MediaPlayer.create(@context, greetings[greeting])
 
-    # TODO もし，MediaPlayerを使い回せなかったら，有効に戻す
     @player = MediaPlayer.create(@context, R.raw.ohayo1)
     @player.start
   end

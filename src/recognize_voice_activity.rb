@@ -1,6 +1,9 @@
 # encoding: utf-8
 require 'ruboto/activity'
 require 'ruboto/util/toast'
+require 'ruboto/widget'
+
+ruboto_import_widgets :TextView
 
 java_import 'android.speech.RecognizerIntent'
 java_import 'android.speech.SpeechRecognizer'
@@ -10,6 +13,7 @@ java_import 'android.media.MediaPlayer'
 java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
 java_import 'android.util.Log'
+java_import 'android.net.ConnectivityManager'
 
 class RecognizeVoiceActivity
   def on_create(bundle)
@@ -17,7 +21,19 @@ class RecognizeVoiceActivity
     set_title 'Recognize Speeches'
 
     @context = getApplicationContext
-    start_recognize_voice(@context)
+
+    connectivity_manager = @context.get_system_service(Context::CONNECTIVITY_SERVICE)
+    network = connectivity_manager.getActiveNetworkInfo
+    if network
+      is_online = network.is_connected_or_connecting
+      if is_online
+        start_recognize_voice(@context)
+      else
+        setContentView(text_view :text => '端末がオフラインです。ネットワークを有効にするか、ネットワークが有効なアクセスポイントに変更して、再起動してください。')
+      end
+    else
+      setContentView(text_view :text => '端末がオフラインです。インターネットに接続して、再起動してください。')
+    end
   end
 
   def start_recognize_voice(context)
@@ -45,7 +61,7 @@ class SpeechListener
     @activity = activity
     @context = activity.getApplicationContext
 
-    ohayo_sound_ids = [R.raw.ohayo1,R.raw.ohayo2,R.raw.ohayo3,R.raw.ohayo4,R.raw.ohayo5,R.raw.ohayo6,R.raw.ohayo7,R.raw.ohayo8]
+    ohayo_sound_ids = [R.raw.ohayo1, R.raw.ohayo2, R.raw.ohayo3, R.raw.ohayo4, R.raw.ohayo5, R.raw.ohayo6, R.raw.ohayo7, R.raw.ohayo8]
     otsukare_sound_ids = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
 
     ohayo_sound = ohayo_sound_ids[rand(8)]

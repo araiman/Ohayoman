@@ -30,7 +30,7 @@ class RecognizeVoiceActivity
                     RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
     intent.putExtra(RecognizerIntent::EXTRA_PROMPT, 'Please Speech')
 
-    # beep音を，ミュートしたり，解除したりする処理では，同じAudioManagerを使わなきゃいけないらしい
+    # 音声のMute,unMute処理を繰り返し行うには、Activity全体で1つのAudioManagerを使わなければいけないルール。
     # リスナーでも同じManagerを使えるよう，Global変数にしている．
     $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
     $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
@@ -44,6 +44,15 @@ class SpeechListener
   def initialize(activity)
     @activity = activity
     @context = activity.getApplicationContext
+
+    ohayo_sound_ids = [R.raw.ohayo1,R.raw.ohayo2,R.raw.ohayo3,R.raw.ohayo4,R.raw.ohayo5,R.raw.ohayo6,R.raw.ohayo7,R.raw.ohayo8]
+    otsukare_sound_ids = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
+
+    ohayo_sound = ohayo_sound_ids[rand(8)]
+    otsukare_sound = otsukare_sound_ids[rand(12)]
+
+    @player_ohayo = MediaPlayer.create(@context, ohayo_sound)
+    @player_otsukare = MediaPlayer.create(@context, otsukare_sound)
   end
 
   def hashCode
@@ -84,11 +93,9 @@ class SpeechListener
       || result[0] == 'はようございます' \
       || result[0] == 'おはよう ございます'
 
-      # ohayo_num = rand(8)
-      # play_greeting([:ohayo][ohayo_num])
       $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
-      play_greeting(:ohayo)
+      @player_ohayo.start
       launch_recognize_voice_after_playback
 
     elsif result[0] == 'こんにちは' \
@@ -108,9 +115,9 @@ class SpeechListener
       || result[0] == 'します' \
       || result[0] == '先にします'
 
-      otsukare_num = rand(12)
-      # play_greeting([:otsukare][otsukare_num])
-      # play_greeting([:ohayo][ohayo_num])
+      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
+      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
+      @player_otsukare.start
       launch_recognize_voice_after_playback
     end
   end
@@ -127,19 +134,6 @@ class SpeechListener
         break
       end
     end
-  end
-
-  def play_greeting(greeting)
-    # ohayo_resid = [R.raw.ohayo1, R.raw.ohayo2]
-    # otsukare_resid = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
-
-    # greetings = { ohayo: ohayo_resid, otsukare: otsukare_resid }
-    # Log.v 'debug', "#{greetings}"
-    # Log.v 'debug', "#{greetings[greeting]}"
-    # @player = MediaPlayer.create(@context, greetings[greeting])
-
-    @player = MediaPlayer.create(@context, R.raw.ohayo1)
-    @player.start
   end
 end
 

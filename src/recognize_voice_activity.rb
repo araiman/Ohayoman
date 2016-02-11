@@ -3,8 +3,6 @@ require 'ruboto/activity'
 require 'ruboto/util/toast'
 require 'ruboto/widget'
 
-ruboto_import_widgets :TextView
-
 java_import 'android.speech.RecognizerIntent'
 java_import 'android.speech.SpeechRecognizer'
 java_import 'android.speech.RecognitionListener'
@@ -14,6 +12,8 @@ java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
 java_import 'android.util.Log'
 java_import 'android.net.ConnectivityManager'
+
+ruboto_import_widgets :TextView
 
 class RecognizeVoiceActivity
   def on_create(bundle)
@@ -112,14 +112,7 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_ohayo.start
-      launch_recognize_voice_after_playback
-
-    elsif result[0] == 'こんにちは' \
-      || result[0] == 'こんにちわ' \
-      || result[0] == 'こんちは' \
-      || result[0] == 'こんちわ'
-      # TODO こんにちはの音声準備と、play_greetingメソッドを動くように
-      launch_recognize_voice_after_playback
+      continue_recognizing_voice :ohayo
 
     elsif result[0] == 'お疲れ様です' \
       || result[0] == 'お疲れさまです' \
@@ -134,7 +127,7 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_otsukare.start
-      launch_recognize_voice_after_playback
+      continue_recognizing_voice :otsukare
     end
   end
 
@@ -143,22 +136,22 @@ class SpeechListener
 
   private
 
-  def launch_recognize_voice_after_playback
-    loop do
-      unless @player.isPlaying
-        @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-        break
+  def continue_recognizing_voice greeting
+    if greeting == :ohayo
+      loop do
+        unless @player_ohayo.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    elsif greeting == :otsukare
+      loop do
+        unless @player_otsukare.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
       end
     end
   end
 end
 
-class AudioFocus
-  def onAudioFocusChange(_focusChange)
-    nil
-  end
-
-  def toString
-    self.class.to_s
-  end
-end

@@ -146,12 +146,3 @@ class SpeechListener
   end
 end
 
-class AudioFocus
-  def onAudioFocusChange(_focusChange)
-    nil
-  end
-
-  def toString
-    self.class.to_s
-  end
-end

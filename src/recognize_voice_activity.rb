@@ -112,7 +112,7 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_ohayo.start
-      launch_recognize_voice_after_playback
+      launch_recognize_voice_after_playback :ohayo
 
     elsif result[0] == 'お疲れ様です' \
       || result[0] == 'お疲れさまです' \
@@ -127,7 +127,7 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_otsukare.start
-      launch_recognize_voice_after_playback
+      launch_recognize_voice_after_playback :otsukare
     end
   end
 
@@ -136,11 +136,20 @@ class SpeechListener
 
   private
 
-  def launch_recognize_voice_after_playback
-    loop do
-      unless @player.isPlaying
-        @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-        break
+  def launch_recognize_voice_after_playback greeting
+    if greeting == :ohayo
+      loop do
+        unless @player_ohayo.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    elsif greeting == :otsukare
+      loop do
+        unless @player_otsukare.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
       end
     end
   end

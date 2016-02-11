@@ -114,13 +114,6 @@ class SpeechListener
       @player_ohayo.start
       launch_recognize_voice_after_playback
 
-    elsif result[0] == 'こんにちは' \
-      || result[0] == 'こんにちわ' \
-      || result[0] == 'こんちは' \
-      || result[0] == 'こんちわ'
-      # TODO こんにちはの音声準備と、play_greetingメソッドを動くように
-      launch_recognize_voice_after_playback
-
     elsif result[0] == 'お疲れ様です' \
       || result[0] == 'お疲れさまです' \
       || result[0] == 'おつかれさまです' \

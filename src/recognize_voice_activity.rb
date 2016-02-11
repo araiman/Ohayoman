@@ -3,8 +3,6 @@ require 'ruboto/activity'
 require 'ruboto/util/toast'
 require 'ruboto/widget'
 
-ruboto_import_widgets :TextView
-
 java_import 'android.speech.RecognizerIntent'
 java_import 'android.speech.SpeechRecognizer'
 java_import 'android.speech.RecognitionListener'
@@ -14,6 +12,8 @@ java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
 java_import 'android.util.Log'
 java_import 'android.net.ConnectivityManager'
+
+ruboto_import_widgets :TextView
 
 class RecognizeVoiceActivity
   def on_create(bundle)

@@ -86,7 +86,9 @@ class SpeechListener
 
   def onError(error)
     # REVIEW スタイルガイドに忠実に従えば、if文で改行すべきだが、これくらいなら改行しない方が読みやすいのでは？
-    @activity.start_ruboto_activity 'RecognizeVoiceActivity' if error == 6 || error == 7
+    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
+    $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
+    @activity.start_ruboto_activity 'RecognizeVoiceActivity'
   end
 
   def onEvent(_event_type, _params)

@@ -39,7 +39,7 @@ class RecognizeVoiceActivity
             rescue Exception
               Log.i 'MyApp', "Exception in task:\n#$!\n#{$!.backtrace.join("\n")}"
             ensure
-              client.close if client
+              @client.close if @client
             end
           end
           thread.join
@@ -65,7 +65,7 @@ class RecognizeVoiceActivity
         rescue Exception
           Log.i 'MyApp', "Exception in task:\n#$!\n#{$!.backtrace.join("\n")}"
         ensure
-          client.close if client
+          @client.close if @client
         end
       end
       thread.join
@@ -89,6 +89,33 @@ class RecognizeVoiceActivity
     $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
 
     @speech_recognizer.start_listening(intent)
+  end
+
+  def continue_recognizing_voice greeting
+    if greeting == :ohayo
+      loop do
+        unless @player_ohayo.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    elsif greeting == :otsukare
+      loop do
+        unless @player_otsukare.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    end
+  end
+
+  def notify_slack_ohayoman_status status
+    @client = AndroidHttpClient.newInstance('HttpClient')
+    ohayoman_web = HttpPost.new("https://fathomless-tundra-9411.herokuapp.com/slack/status")
+    ohayoman_status = BasicNameValuePair.new('status_code', status)
+    entity = UrlEncodedFormEntity.new([ohayoman_status])
+    ohayoman_web.setEntity(entity)
+    @client.execute(ohayoman_web)
   end
 end
 
@@ -172,33 +199,5 @@ class SpeechListener
   def onRmsChanged(_rmsdB)
   end
 
-  private
-
-  def continue_recognizing_voice greeting
-    if greeting == :ohayo
-      loop do
-        unless @player_ohayo.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    elsif greeting == :otsukare
-      loop do
-        unless @player_otsukare.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    end
-  end
-
-  def notify_slack_ohayoman_status status
-    client = AndroidHttpClient.newInstance('HttpClient')
-    ohayoman_web = HttpPost.new("https://fathomless-tundra-9411.herokuapp.com/slack/status")
-    ohayoman_status = BasicNameValuePair.new('status_code', status)
-    entity = UrlEncodedFormEntity.new([ohayoman_status])
-    ohayoman_web.setEntity(entity)
-    client.execute(ohayoman_web)
-  end
 end
 

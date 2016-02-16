@@ -91,23 +91,6 @@ class RecognizeVoiceActivity
     @speech_recognizer.start_listening(intent)
   end
 
-  def continue_recognizing_voice greeting
-    if greeting == :ohayo
-      loop do
-        unless @player_ohayo.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    elsif greeting == :otsukare
-      loop do
-        unless @player_otsukare.isPlaying
-          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
-          break
-        end
-      end
-    end
-  end
 
   def notify_slack_ohayoman_status status
     @client = AndroidHttpClient.newInstance('HttpClient')
@@ -199,5 +182,23 @@ class SpeechListener
   def onRmsChanged(_rmsdB)
   end
 
+  def continue_recognizing_voice greeting
+    Log.v 'debug', '1'
+    if greeting == :ohayo
+      loop do
+        unless @player_ohayo.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    elsif greeting == :otsukare
+      loop do
+        unless @player_otsukare.isPlaying
+          @activity.start_ruboto_activity 'RecognizeVoiceActivity'
+          break
+        end
+      end
+    end
+  end
 end
 

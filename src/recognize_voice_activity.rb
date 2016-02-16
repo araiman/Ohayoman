@@ -61,6 +61,7 @@ class RecognizeVoiceActivity
       thread = Thread.start do
         begin
           notify_slack_ohayoman_status '11'
+          $is_first_destroy = false
         rescue Exception
           Log.i 'MyApp', "Exception in task:\n#$!\n#{$!.backtrace.join("\n")}"
         ensure

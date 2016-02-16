@@ -44,10 +44,9 @@ class RecognizeVoiceActivity
           end
           thread.join
           $is_first_launch = false
-
-          start_recognize_voice(@context)
           @context.start_service(Intent.new(self, $package.PostStatusService.java_class))
         end
+        start_recognize_voice(@context)
       else
         setContentView(text_view :text => '端末がオフラインです。ネットワークを有効にするか、ネットワークが有効なアクセスポイントに変更して、再起動してください。')
       end

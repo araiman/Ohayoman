@@ -12,27 +12,63 @@ java_import 'android.media.AudioManager'
 java_import 'android.net.Uri'
 java_import 'android.util.Log'
 java_import 'android.net.ConnectivityManager'
+java_import 'android.net.http.AndroidHttpClient'
+
+java_import 'org.apache.http.client.entity.UrlEncodedFormEntity'
+java_import 'org.apache.http.client.methods.HttpPost'
+java_import 'org.apache.http.message.BasicNameValuePair'
+java_import 'org.apache.http.util.EntityUtils'
 
 ruboto_import_widgets :TextView
 
 class RecognizeVoiceActivity
-  def on_create(bundle)
+  def onCreate(bundle)
     super
     set_title 'Recognize Speeches'
 
     @context = getApplicationContext
-
     connectivity_manager = @context.get_system_service(Context::CONNECTIVITY_SERVICE)
     network = connectivity_manager.getActiveNetworkInfo
     if network
       is_online = network.is_connected_or_connecting
       if is_online
-        start_recognize_voice(@context)
+        if $is_first_launch == nil
+          thread = Thread.start do
+            begin
+              notify_slack_ohayoman_status '10'
+            rescue Exception
+              Log.i 'MyApp', "Exception in task:\n#$!\n#{$!.backtrace.join("\n")}"
+            ensure
+              client.close if client
+            end
+          end
+          thread.join
+          $is_first_launch = false
+
+          start_recognize_voice(@context)
+          @context.start_service(Intent.new(self, $package.PostStatusService.java_class))
+        end
       else
         setContentView(text_view :text => '端末がオフラインです。ネットワークを有効にするか、ネットワークが有効なアクセスポイントに変更して、再起動してください。')
       end
     else
       setContentView(text_view :text => '端末がオフラインです。インターネットに接続して、再起動してください。')
+    end
+  end
+
+  def onDestroy
+    super
+    if $is_first_destroy == nil
+      thread = Thread.start do
+        begin
+          notify_slack_ohayoman_status '11'
+        rescue Exception
+          Log.i 'MyApp', "Exception in task:\n#$!\n#{$!.backtrace.join("\n")}"
+        ensure
+          client.close if client
+        end
+      end
+      thread.join
     end
   end
 
@@ -154,6 +190,15 @@ class SpeechListener
         end
       end
     end
+  end
+
+  def notify_slack_ohayoman_status status
+    client = AndroidHttpClient.newInstance('HttpClient')
+    ohayoman_web = HttpPost.new("https://fathomless-tundra-9411.herokuapp.com/slack/status")
+    ohayoman_status = BasicNameValuePair.new('status_code', status)
+    entity = UrlEncodedFormEntity.new([ohayoman_status])
+    ohayoman_web.setEntity(entity)
+    client.execute(ohayoman_web)
   end
 end
 

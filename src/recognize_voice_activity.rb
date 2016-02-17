@@ -161,7 +161,6 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_ohayo.start
       continue_recognizing_voice :ohayo
-
     elsif result[0] == 'お疲れ様です' \
       || result[0] == 'お疲れさまです' \
       || result[0] == 'おつかれさまです' \
@@ -176,6 +175,10 @@ class SpeechListener
       $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_otsukare.start
       continue_recognizing_voice :otsukare
+    else
+      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
+      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
+      @activity.start_ruboto_activity 'RecognizeVoiceActivity'
     end
   end
 
@@ -183,7 +186,6 @@ class SpeechListener
   end
 
   def continue_recognizing_voice greeting
-    Log.v 'debug', '1'
     if greeting == :ohayo
       loop do
         unless @player_ohayo.isPlaying

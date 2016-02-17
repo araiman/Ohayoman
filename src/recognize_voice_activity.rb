@@ -13,18 +13,19 @@ java_import 'android.net.Uri'
 java_import 'android.util.Log'
 java_import 'android.net.ConnectivityManager'
 java_import 'android.net.http.AndroidHttpClient'
+java_import 'android.view.Window'
 
 java_import 'org.apache.http.client.entity.UrlEncodedFormEntity'
 java_import 'org.apache.http.client.methods.HttpPost'
 java_import 'org.apache.http.message.BasicNameValuePair'
 java_import 'org.apache.http.util.EntityUtils'
 
-ruboto_import_widgets :TextView
+ruboto_import_widgets :LinearLayout, :TextView, :ImageView
 
 class RecognizeVoiceActivity
   def onCreate(bundle)
     super
-    set_title 'Recognize Speeches'
+    build_ui
 
     @context = getApplicationContext
     connectivity_manager = @context.get_system_service(Context::CONNECTIVITY_SERVICE)
@@ -99,6 +100,15 @@ class RecognizeVoiceActivity
     entity = UrlEncodedFormEntity.new([ohayoman_status])
     ohayoman_web.setEntity(entity)
     @client.execute(ohayoman_web)
+  end
+
+  def build_ui
+    self.requestWindowFeature(Window::FEATURE_NO_TITLE)
+    self.content_view =
+        linear_layout :padding => [130, 100, 130, 0], :backgroundColor => 0xffffffff do
+          image_view  :image_resource => $package::R.drawable.ohayogozaimax_face_starting_up,
+                      :layout => {:width => :wrap_content, :height => :wrap_content}
+        end
   end
 end
 

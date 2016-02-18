@@ -86,7 +86,6 @@ class RecognizeVoiceActivity
     # 音声のMute,unMute処理を繰り返し行うには、Activity全体で1つのAudioManagerを使わなければいけないルール。
     # リスナーでも同じManagerを使えるよう，Global変数にしている．
     $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
     $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
 
     @speech_recognizer.start_listening(intent)
@@ -142,8 +141,6 @@ class SpeechListener
 
   def onError(error)
     # REVIEW スタイルガイドに忠実に従えば、if文で改行すべきだが、これくらいなら改行しない方が読みやすいのでは？
-    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
-    $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
     @activity.start_ruboto_activity 'RecognizeVoiceActivity'
   end
 
@@ -167,8 +164,6 @@ class SpeechListener
       || result[0] == 'はようございます' \
       || result[0] == 'おはよう ございます'
 
-      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
-      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_ohayo.start
       continue_recognizing_voice :ohayo
     elsif result[0] == 'お疲れ様です' \
@@ -181,13 +176,9 @@ class SpeechListener
       || result[0] == 'します' \
       || result[0] == '先にします'
 
-      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
-      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @player_otsukare.start
       continue_recognizing_voice :otsukare
     else
-      $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, false)
-      $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, false)
       @activity.start_ruboto_activity 'RecognizeVoiceActivity'
     end
   end

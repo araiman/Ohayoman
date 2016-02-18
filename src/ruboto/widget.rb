@@ -86,7 +86,7 @@ View.class_eval do
   def self.add_constant_conversion(from, to)
     symbol = from.to_s.downcase.to_sym
     if @@convert_constants.include?(symbol)
-      puts "WARNING: Overwriting symbol to constant conversion for #{symbol.inspect}:  #{@@convert_constants[symbol].inspect} => #{to.inspect}"
+      # puts "WARNING: Overwriting symbol to constant conversion for #{symbol.inspect}:  #{@@convert_constants[symbol].inspect} => #{to.inspect}"
     end
     @@convert_constants[symbol] = to
   end

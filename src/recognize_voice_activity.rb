@@ -2,6 +2,7 @@
 require 'ruboto/activity'
 require 'ruboto/util/toast'
 require 'ruboto/widget'
+require_relative 'speech_listener.rb'
 
 java_import 'android.speech.RecognizerIntent'
 java_import 'android.speech.SpeechRecognizer'
@@ -21,7 +22,6 @@ java_import 'org.apache.http.message.BasicNameValuePair'
 java_import 'org.apache.http.util.EntityUtils'
 
 ruboto_import_widgets :LinearLayout, :TextView, :ImageView
-require_relative 'speech_listener.rb'
 
 class RecognizeVoiceActivity
   def onCreate(bundle)

@@ -61,6 +61,7 @@ class SpeechListener
       $player_otsukare.start
       continue_recognizing_voice :otsukare
     else
+      reset_media_players
       @activity.start_ruboto_activity 'RecognizeVoiceActivity'
     end
   end

@@ -84,12 +84,10 @@ class RecognizeVoiceActivity
       $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE, 'ja_JP')
       $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
                                          RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
-    end
-    # 音声のMute,unMute処理を繰り返し行うには、Activity全体で1つのAudioManagerを使わなければいけないルール。
-    # リスナーでも同じManagerを使えるよう，Global変数にしている．
-    $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
 
+      audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
+      audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
+    end
     $speech_recognizer.start_listening($recognizing_voice_intent)
   end
 

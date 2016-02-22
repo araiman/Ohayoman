@@ -75,21 +75,22 @@ class RecognizeVoiceActivity
   end
 
   def start_recognize_voice(context)
-    recognition_listner = SpeechListener.new(self)
-    @speech_recognizer = SpeechRecognizer.create_speech_recognizer(context)
-    @speech_recognizer.set_recognition_listener(recognition_listner)
-    intent = Intent.new(RecognizerIntent::ACTION_RECOGNIZE_SPEECH)
-    intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE, 'ja_JP')
-    intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
-    intent.putExtra(RecognizerIntent::EXTRA_PROMPT, 'Please Speech')
+    if $speech_recognizer == nil
+      recognition_listner = SpeechListener.new(self)
+      $speech_recognizer = SpeechRecognizer.create_speech_recognizer(context)
+      $speech_recognizer.set_recognition_listener(recognition_listner)
 
+      $recognizing_voice_intent = Intent.new(RecognizerIntent::ACTION_RECOGNIZE_SPEECH)
+      $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE, 'ja_JP')
+      $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
+                                         RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
+    end
     # 音声のMute,unMute処理を繰り返し行うには、Activity全体で1つのAudioManagerを使わなければいけないルール。
     # リスナーでも同じManagerを使えるよう，Global変数にしている．
     $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-    $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
+    $audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
 
-    @speech_recognizer.start_listening(intent)
+    $speech_recognizer.start_listening($recognizing_voice_intent)
   end
 
   def notify_slack_ohayoman_status status

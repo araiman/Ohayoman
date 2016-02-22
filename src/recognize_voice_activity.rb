@@ -86,8 +86,18 @@ class RecognizeVoiceActivity
                                          RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
 
       audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-      audio_manager.setStreamMute(AudioManager::STREAM_SYSTEM, true)
+      audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
+
+      $ohayo_sound_resids = [R.raw.ohayo1, R.raw.ohayo2, R.raw.ohayo3, R.raw.ohayo4, R.raw.ohayo5, R.raw.ohayo6, R.raw.ohayo7, R.raw.ohayo8]
+      $otsukare_sound_resids = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
+      $player_ohayo = MediaPlayer.new
+      $player_otsukare = MediaPlayer.new
     end
+    ohayo_sound_resid = $ohayo_sound_resids[rand(8)]
+    otsukare_sound_resid = $otsukare_sound_resids[rand(12)]
+    prepare_greeting_player $player_ohayo, ohayo_sound_resid
+    prepare_greeting_player $player_otsukare, otsukare_sound_resid
+
     $speech_recognizer.start_listening($recognizing_voice_intent)
   end
 
@@ -107,5 +117,13 @@ class RecognizeVoiceActivity
           image_view  :image_resource => $package::R.drawable.ohayogozaimax_face_starting_up,
                       :layout => {:width => :wrap_content, :height => :wrap_content}
         end
+  end
+
+  def prepare_greeting_player player, greeting_resid
+    Log.v 'debug', 'prepare greeting player'
+    greeting_uri = Uri.parse("android.resource://com.ohayoman_app/#{greeting_resid}")
+    player.set_data_source(@context, greeting_uri)
+    player.set_audio_stream_type(AudioManager::STREAM_DTMF)
+    player.prepare
   end
 end

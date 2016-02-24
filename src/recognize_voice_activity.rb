@@ -34,7 +34,7 @@ class RecognizeVoiceActivity
     if network
       is_online = network.is_connected_or_connecting
       if is_online
-        if $is_first_launch == nil
+        if $is_first_launch.nil?
           thread = Thread.start do
             begin
               notify_slack_ohayoman_status '10'
@@ -59,7 +59,7 @@ class RecognizeVoiceActivity
 
   def onDestroy
     super
-    if $is_first_destroy == nil
+    if $is_first_destroy.nil?
       thread = Thread.start do
         begin
           notify_slack_ohayoman_status '11'
@@ -75,7 +75,7 @@ class RecognizeVoiceActivity
   end
 
   def start_recognize_voice(context)
-    if $speech_recognizer == nil
+    if $speech_recognizer.nil?
       recognition_listner = SpeechListener.new(self)
       $speech_recognizer = SpeechRecognizer.create_speech_recognizer(context)
       $speech_recognizer.set_recognition_listener(recognition_listner)

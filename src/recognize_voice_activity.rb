@@ -2,6 +2,7 @@
 require 'ruboto/activity'
 require 'ruboto/util/toast'
 require 'ruboto/widget'
+require_relative 'speech_listener.rb'
 
 java_import 'android.speech.RecognizerIntent'
 java_import 'android.speech.SpeechRecognizer'
@@ -21,7 +22,6 @@ java_import 'org.apache.http.message.BasicNameValuePair'
 java_import 'org.apache.http.util.EntityUtils'
 
 ruboto_import_widgets :LinearLayout, :TextView, :ImageView
-require_relative 'speech_listener.rb'
 
 class RecognizeVoiceActivity
   def onCreate(bundle)
@@ -34,7 +34,7 @@ class RecognizeVoiceActivity
     if network
       is_online = network.is_connected_or_connecting
       if is_online
-        if $is_first_launch == nil
+        if $is_first_launch.nil?
           thread = Thread.start do
             begin
               notify_slack_ohayoman_status '10'
@@ -59,7 +59,7 @@ class RecognizeVoiceActivity
 
   def onDestroy
     super
-    if $is_first_destroy == nil
+    if $is_first_destroy.nil?
       thread = Thread.start do
         begin
           notify_slack_ohayoman_status '11'
@@ -75,21 +75,30 @@ class RecognizeVoiceActivity
   end
 
   def start_recognize_voice(context)
-    recognition_listner = SpeechListener.new(self)
-    @speech_recognizer = SpeechRecognizer.create_speech_recognizer(context)
-    @speech_recognizer.set_recognition_listener(recognition_listner)
-    intent = Intent.new(RecognizerIntent::ACTION_RECOGNIZE_SPEECH)
-    intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE, 'ja_JP')
-    intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
-                    RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
-    intent.putExtra(RecognizerIntent::EXTRA_PROMPT, 'Please Speech')
+    if $speech_recognizer.nil?
+      recognition_listner = SpeechListener.new(self)
+      $speech_recognizer = SpeechRecognizer.create_speech_recognizer(context)
+      $speech_recognizer.set_recognition_listener(recognition_listner)
 
-    # 音声のMute,unMute処理を繰り返し行うには、Activity全体で1つのAudioManagerを使わなければいけないルール。
-    # リスナーでも同じManagerを使えるよう，Global変数にしている．
-    $audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
-    $audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
+      $recognizing_voice_intent = Intent.new(RecognizerIntent::ACTION_RECOGNIZE_SPEECH)
+      $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE, 'ja_JP')
+      $recognizing_voice_intent.putExtra(RecognizerIntent::EXTRA_LANGUAGE_MODEL,
+                                         RecognizerIntent::LANGUAGE_MODEL_FREE_FORM)
 
-    @speech_recognizer.start_listening(intent)
+      audio_manager = @context.getSystemService(Context::AUDIO_SERVICE)
+      audio_manager.setStreamMute(AudioManager::STREAM_MUSIC, true)
+
+      $ohayo_sound_resids = [R.raw.ohayo1, R.raw.ohayo2, R.raw.ohayo3, R.raw.ohayo4, R.raw.ohayo5, R.raw.ohayo6, R.raw.ohayo7, R.raw.ohayo8]
+      $otsukare_sound_resids = [R.raw.otsukare1, R.raw.otsukare2, R.raw.otsukare3, R.raw.otsukare4, R.raw.otsukare5, R.raw.otsukare6, R.raw.otsukare7, R.raw.otsukare8, R.raw.otsukare9, R.raw.otsukare10, R.raw.otsukare11, R.raw.otsukare12]
+      $player_ohayo = MediaPlayer.new
+      $player_otsukare = MediaPlayer.new
+    end
+    ohayo_sound_resid = $ohayo_sound_resids[rand(8)]
+    otsukare_sound_resid = $otsukare_sound_resids[rand(12)]
+    prepare_greeting_player $player_ohayo, ohayo_sound_resid
+    prepare_greeting_player $player_otsukare, otsukare_sound_resid
+
+    $speech_recognizer.start_listening($recognizing_voice_intent)
   end
 
   def notify_slack_ohayoman_status status
@@ -108,5 +117,13 @@ class RecognizeVoiceActivity
           image_view  :image_resource => $package::R.drawable.ohayogozaimax_face_starting_up,
                       :layout => {:width => :wrap_content, :height => :wrap_content}
         end
+  end
+
+  def prepare_greeting_player player, greeting_resid
+    Log.v 'debug', 'prepare greeting player'
+    greeting_uri = Uri.parse("android.resource://com.ohayoman_app/#{greeting_resid}")
+    player.set_data_source(@context, greeting_uri)
+    player.set_audio_stream_type(AudioManager::STREAM_DTMF)
+    player.prepare
   end
 end

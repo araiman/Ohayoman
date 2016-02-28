@@ -56,7 +56,6 @@ def get_precipitation
                            .getJSONObject('WeatherList').getJSONArray('Weather')
       2.times do |count|
         rainfall = precipitations.getJSONObject(count).getString('Rainfall').to_i
-        Log.v 'debug', "precipitation is #{rainfall}"
         if rainfall != 0
           $notify_it_is_raining_player = MediaPlayer.new
           raining_voice_uri = Uri.parse("android.resource://com.ohayoman_app/#{R.raw.it_is_raining}")

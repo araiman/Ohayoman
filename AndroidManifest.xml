@@ -13,6 +13,8 @@
         <service android:exported='false' android:name='org.ruboto.RubotoService'/>
         <!-- <activity android:name='RecognizeVoiceActivity'/> -->
         <service android:name='com.ohayoman_app.PostStatusService'/>
+        <service android:name='com.ohayoman_app.GetForecastsService'/>
+        <service android:name='com.ohayoman_app.GetCurrentPrecipitationService'/>
     </application>
     <uses-sdk android:minSdkVersion='16' android:targetSdkVersion='16'/>
     <uses-permission android:name='android.permission.RECORD_AUDIO'/>

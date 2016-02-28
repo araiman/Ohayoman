@@ -58,6 +58,19 @@ class SpeechListener
       || result[0] == 'します' \
       || result[0] == '先にします'
 
+      # TODO 音声が連続する場合に、音声の間に「あと」と言うように変更
+      unless $notify_it_is_raining_player.nil?
+        $notify_it_is_raining_player.start
+        block_other_voices :it_is_raining_voice
+      end
+      unless $notify_it_will_rain_player.nil?
+        $notify_it_will_rain_player.start
+        block_other_voices :it_will_rain_voice
+      end
+      unless $notify_it_will_snow_player.nil?
+        $notify_it_will_snow_player.start
+        block_other_voices :it_will_snow_voice
+      end
       $player_otsukare.start
       continue_recognizing_voice :otsukare
     else
@@ -67,6 +80,23 @@ class SpeechListener
   end
 
   def onRmsChanged(_rmsdB)
+  end
+
+  def block_other_voices voice_of_info
+    case voice_of_info
+      when :it_is_raining_voice
+        loop do
+          break unless $notify_it_is_raining_player.isPlaying
+        end
+      when :it_will_rain_voice
+        loop do
+          break unless $notify_it_will_rain_player.isPlaying
+        end
+      when :it_will_snow_voice
+        loop do
+          break unless $notify_it_will_snow_player.isPlaying
+        end
+    end
   end
 
   def continue_recognizing_voice greeting
